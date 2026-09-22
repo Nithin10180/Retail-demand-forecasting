@@ -1,7 +1,7 @@
-
 import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
+import requests
 
 st.set_page_config(
     page_title="Retail Demand Forecasting",
@@ -9,86 +9,96 @@ st.set_page_config(
     layout="wide"
 )
 
-# Load data
-forecasts = pd.read_csv("outputs/future_demand_forecasts.csv")
-inventory = pd.read_csv("outputs/inventory_recommendations.csv")
-
-forecasts["date"] = pd.to_datetime(forecasts["date"])
-
-# Make numeric columns numeric
-forecasts["predicted_sales"] = pd.to_numeric(
-    forecasts["predicted_sales"],
-    errors="coerce"
-).fillna(0)
-
-numeric_inventory_cols = [
-    "recommended_stock",
-    "safety_stock",
-    "predicted_7_day_demand",
-    "avg_daily_demand"
-]
-
-for col in numeric_inventory_cols:
-    if col in inventory.columns:
-        inventory[col] = pd.to_numeric(
-            inventory[col],
-            errors="coerce"
-        ).fillna(0)
+API_URL = "https://nithin-retail-demand-api.onrender.com/forecast"
 
 st.title("📈 Retail Demand Forecasting & Inventory Optimization")
 st.write(
     "Forecast future product demand and support inventory planning."
 )
 
-families = sorted(forecasts["family"].dropna().unique())
+# Product families
+families = [
+    "AUTOMOTIVE",
+    "BABY CARE",
+    "BEAUTY",
+    "BEVERAGES",
+    "BOOKS",
+    "BREAD/BAKERY",
+    "CELEBRATION",
+    "CLEANING",
+    "DAIRY",
+    "DELI",
+    "EGGS",
+    "FROZEN FOODS",
+    "GROCERY I",
+    "GROCERY II",
+    "HARDWARE",
+    "HOME AND KITCHEN I",
+    "HOME AND KITCHEN II",
+    "HOME APPLIANCES",
+    "HOME CARE",
+    "LADIESWEAR",
+    "LAWN AND GARDEN",
+    "LINGERIE",
+    "LIQUOR,WINE,BEER",
+    "MAGAZINES",
+    "MEATS",
+    "PERSONAL CARE",
+    "PET SUPPLIES",
+    "PLAYERS AND ELECTRONICS",
+    "POULTRY",
+    "PREPARED FOODS",
+    "PRODUCE",
+    "SCHOOL AND OFFICE SUPPLIES",
+    "SEAFOOD"
+]
 
 selected_family = st.selectbox(
     "Select Product Family",
     families
 )
 
-family_forecast = (
-    forecasts[
-        forecasts["family"] == selected_family
-    ]
-    .sort_values("date")
-    .copy()
+# Call FastAPI
+try:
+    response = requests.post(
+        API_URL,
+        json={"family": selected_family},
+        timeout=90
+    )
+
+    if response.status_code != 200:
+        st.error(
+            f"API request failed with status code "
+            f"{response.status_code}"
+        )
+        st.stop()
+
+    result = response.json()
+
+except requests.exceptions.RequestException as e:
+    st.error(f"Unable to connect to FastAPI: {e}")
+    st.stop()
+
+# Extract API response
+forecasted_demand = result["forecasted_7_day_demand"]
+recommended_stock = result.get("recommended_stock", 0)
+safety_stock = result.get("safety_stock", 0)
+demand_risk = result.get("demand_risk", "N/A")
+
+daily_forecast = pd.DataFrame(
+    result["daily_forecast"]
 )
 
-family_inventory = inventory[
-    inventory["family"] == selected_family
-].copy()
-
-# KPI calculations
-total_demand = float(
-    family_forecast["predicted_sales"].sum()
+daily_forecast["date"] = pd.to_datetime(
+    daily_forecast["date"]
 )
-
-if not family_inventory.empty:
-
-    recommended_stock = float(
-        family_inventory["recommended_stock"].iloc[0]
-    )
-
-    safety_stock = float(
-        family_inventory["safety_stock"].iloc[0]
-    )
-
-    risk = str(
-        family_inventory["risk_category"].iloc[0]
-    )
-
-else:
-    recommended_stock = 0.0
-    safety_stock = 0.0
-    risk = "N/A"
 
 # KPI cards
 col1, col2, col3, col4 = st.columns(4)
 
 col1.metric(
     "Forecasted Demand",
-    f"{total_demand:,.0f}"
+    f"{forecasted_demand:,.0f}"
 )
 
 col2.metric(
@@ -103,7 +113,7 @@ col3.metric(
 
 col4.metric(
     "Demand Risk",
-    risk
+    demand_risk
 )
 
 # Forecast chart
@@ -112,28 +122,27 @@ st.subheader("Future Demand Forecast")
 fig, ax = plt.subplots(figsize=(12, 5))
 
 ax.plot(
-    family_forecast["date"],
-    family_forecast["predicted_sales"],
+    daily_forecast["date"],
+    daily_forecast["predicted_sales"],
     marker="o"
+)
+
+ax.set_title(
+    f"{selected_family} - Future Demand"
 )
 
 ax.set_xlabel("Date")
 ax.set_ylabel("Predicted Sales")
-ax.set_title(
-    f"{selected_family} - Future Demand"
-)
 
 plt.xticks(rotation=45)
 plt.tight_layout()
 
 st.pyplot(fig)
 
-# Daily forecast
+# Daily forecast table
 st.subheader("Daily Forecast")
 
-display_forecast = family_forecast[
-    ["date", "predicted_sales"]
-].rename(
+display_forecast = daily_forecast.rename(
     columns={
         "date": "Date",
         "predicted_sales": "Predicted Sales"
@@ -159,5 +168,5 @@ st.write(
 )
 
 st.write(
-    f"**Demand risk:** {risk}"
+    f"**Demand risk:** {demand_risk}"
 )
