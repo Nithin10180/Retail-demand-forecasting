@@ -10,8 +10,8 @@ st.set_page_config(
 )
 
 # Load data
-forecasts = pd.read_csv("future_demand_forecasts.csv")
-inventory = pd.read_csv("inventory_recommendations.csv")
+forecasts = pd.read_csv("outputs/future_demand_forecasts.csv")
+inventory = pd.read_csv("outputs/inventory_recommendations.csv")
 
 forecasts["date"] = pd.to_datetime(forecasts["date"])
 

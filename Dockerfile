@@ -1,12 +1,12 @@
-
 FROM python:3.11-slim
 
 WORKDIR /app
 
 COPY api.py .
-COPY future_demand_forecasts.csv .
-COPY inventory_recommendations.csv .
 COPY requirements.txt .
+
+COPY outputs/future_demand_forecasts.csv outputs/
+COPY outputs/inventory_recommendations.csv outputs/
 
 RUN pip install --no-cache-dir -r requirements.txt
 
