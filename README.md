@@ -5,7 +5,7 @@
 ---
 # 🔗 Project Links
 Resource	Link
-🚀 **Live Streamlit Dashboard	https://nithin-demand-forecasting-2026.streamlit.app**
+🚀 **Live Streamlit Dashboard - https://nithin-demand-forecasting-2026.streamlit.app**
 🔌 Live FastAPI Backend	https://nithin-retail-demand-api.onrender.com
 📚 Swagger API Documentation	https://nithin-retail-demand-api.onrender.com/docs
 💻 GitHub Repository	https://github.com/Nithin10180/Retail-demand-forecasting
