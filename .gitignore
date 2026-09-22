@@ -1,0 +1,12 @@
+__pycache__/
+*.pyc
+.ipynb_checkpoints/
+.env
+*.zip
+train.csv
+test.csv
+stores.csv
+transactions.csv
+holidays_events.csv
+oil.csv
+sample_submission.csv
