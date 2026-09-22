@@ -3,6 +3,12 @@
 > An end-to-end machine learning system that forecasts future retail demand and supports inventory planning using historical sales patterns, time-series feature engineering, XGBoost, SQL, Streamlit, FastAPI, and Docker.
 
 ---
+# 🔗 Project Links
+Resource	Link
+🚀 Live Streamlit Dashboard	https://nithin-demand-forecasting-2026.streamlit.app
+🔌 Live FastAPI Backend	https://nithin-retail-demand-api.onrender.com
+📚 Swagger API Documentation	https://nithin-retail-demand-api.onrender.com/docs
+💻 GitHub Repository	https://github.com/Nithin10180/Retail-demand-forecasting
 
 # 🚀 Live Project
 
