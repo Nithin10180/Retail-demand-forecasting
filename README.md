@@ -78,6 +78,7 @@ Streamlit Dashboard
 Docker
        ↓
 Cloud Deployment
+```
 
 # 🎯 Problem Statement
 
